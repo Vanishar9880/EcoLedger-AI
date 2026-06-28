@@ -1,0 +1,45 @@
+# ======================
+# Node Modules
+# ======================
+node_modules/
+**/node_modules/
+
+# ======================
+# Environment Variables
+# ======================
+backend/.env
+frontend/.env
+.env
+.env.*
+
+# ======================
+# Uploads
+# ======================
+backend/uploads/*
+!backend/uploads/.gitkeep
+
+# ======================
+# Build
+# ======================
+dist/
+build/
+**/dist/
+**/build/
+
+# ======================
+# Logs
+# ======================
+*.log
+npm-debug.log*
+
+# ======================
+# IDE
+# ======================
+.vscode/
+.idea/
+
+# ======================
+# OS
+# ======================
+.DS_Store
+Thumbs.db
