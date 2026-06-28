@@ -13,6 +13,7 @@ import connectDB from "./config/db.js";
 import authRoutes from "./routes/authRoutes.js";
 import ledgerRoutes from "./routes/ledgerRoutes.js";
 import documentRoutes from "./routes/documentRoutes.js";
+import auditRoutes from "./routes/auditRoutes.js";
 
 dotenv.config();
 connectDB();
@@ -26,6 +27,7 @@ app.use(express.json());
 app.use("/api/auth", authRoutes);
 app.use("/api/ledger", ledgerRoutes);
 app.use("/api/documents", documentRoutes);
+app.use("/api/audit", auditRoutes);
 
 const ai = new GoogleGenAI({
   apiKey: process.env.GEMINI_API_KEY,

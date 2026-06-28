@@ -19,6 +19,11 @@ const documentSchema = new mongoose.Schema(
     unit: String,
     factor: Number,
     co2e: Number,
+    confidence: Number,
+    supported: {
+      type: Boolean,
+      default: true,
+    },
   },
   { timestamps: true }
 

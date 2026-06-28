@@ -5,6 +5,7 @@ import Signup from "./pages/Signup";
 import Dashboard from "./pages/Dashboard";
 import DataIngestion from "./pages/DataIngestion";
 import AuditLedger from "./pages/AuditLedger";
+import AuditTrail from "./pages/AuditTrail";
 import Compliance from "./pages/Compliance";
 import Settings from "./pages/Settings";
 import Analytics from "./pages/Analytics";
@@ -32,6 +33,15 @@ function App() {
           element={
             <ProtectedRoute>
               <DataIngestion />
+            </ProtectedRoute>
+          }
+        />
+
+        <Route
+          path="/audit-trail"
+          element={
+            <ProtectedRoute>
+              <AuditTrail />
             </ProtectedRoute>
           }
         />

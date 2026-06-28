@@ -7,6 +7,7 @@ import {
   Settings,
   BarChart3,
   ShieldCheck,
+  History,
   LogOut,
   Menu,
   X,
@@ -71,6 +72,7 @@ function Sidebar() {
         <NavItem open={open} icon={<Upload size={18} />} text="Data Ingestion" link="/ingestion" />
         <NavItem open={open} icon={<Sparkles size={18} />} text="Analytics" link="/analytics" />
         <NavItem open={open} icon={<FileText size={18} />} text="Audit Ledger" link="/audit" />
+        <NavItem open={open} icon={<History size={18} />} text="AI Audit Trail" link="/audit-trail" />
         <NavItem open={open} icon={<ShieldCheck size={18} />} text="Compliance" link="/compliance" />
         <NavItem open={open} icon={<Settings size={18} />} text="Settings" link="/settings" />
       </div>

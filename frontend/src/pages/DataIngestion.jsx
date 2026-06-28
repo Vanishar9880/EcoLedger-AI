@@ -9,17 +9,22 @@ import {
   Calculator,
   CheckCircle2,
   AlertCircle,
+  RefreshCw,
+  X,
 } from "lucide-react";
 
 function DataIngestion() {
   const [input, setInput] = useState("");
   const [loading, setLoading] = useState(false);
   const [result, setResult] = useState(null);
-  const { addEntry } = useLedger();
+  const { addEntry, fetchLedger } = useLedger();
   const [message, setMessage] = useState("");
   const [selectedFile, setSelectedFile] = useState(null);
-const [uploading, setUploading] = useState(false);
-const [pdfResult, setPdfResult] = useState(null);
+  const [uploading, setUploading] = useState(false);
+  const [pdfResult, setPdfResult] = useState(null);
+  const [pdfSaved, setPdfSaved] = useState(false);
+  const [savingPdf, setSavingPdf] = useState(false);
+  const [fileInputKey, setFileInputKey] = useState(0);
 
   const addToLedger = async () => {
     if (!result) return;
@@ -75,47 +80,99 @@ const [pdfResult, setPdfResult] = useState(null);
     }
   };
 
+  const resetPdfUpload = () => {
+    setPdfResult(null);
+    setPdfSaved(false);
+    setSelectedFile(null);
+    setMessage("");
+    setFileInputKey((prev) => prev + 1);
+  };
+
   const uploadInvoice = async () => {
-  if (!selectedFile) {
-    setMessage("Please select a PDF file.");
-    return;
-  }
-
-  setUploading(true);
-  setMessage("");
-
-  const token = localStorage.getItem("ecoledger_token");
-
-  try {
-    const formData = new FormData();
-    formData.append("file", selectedFile);
-
-    const response = await fetch(
-      "http://localhost:5000/api/documents/upload",
-      {
-        method: "POST",
-        headers: {
-          Authorization: `Bearer ${token}`,
-        },
-        body: formData,
-      }
-    );
-
-    const data = await response.json();
-
-    if (!response.ok) {
-      throw new Error(data.error || "Upload failed");
+    if (!selectedFile) {
+      setMessage("Please select a PDF file.");
+      return;
     }
 
-    setPdfResult(data);
-    setMessage("Invoice analyzed successfully!");
-  } catch (error) {
-    console.error(error);
-    setMessage("Invoice analysis failed.");
-  } finally {
-    setUploading(false);
-  }
-};
+    setUploading(true);
+    setMessage("");
+    setPdfResult(null);
+    setPdfSaved(false);
+
+    const token = localStorage.getItem("ecoledger_token");
+
+    try {
+      const formData = new FormData();
+      formData.append("file", selectedFile);
+
+      const response = await fetch(
+        "http://localhost:5000/api/documents/upload",
+        {
+          method: "POST",
+          headers: {
+            Authorization: `Bearer ${token}`,
+          },
+          body: formData,
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.reason || "Upload failed");
+      }
+
+      setPdfResult(data);
+      setMessage("Invoice analyzed — review the results below.");
+    } catch (error) {
+      console.error(error);
+      setMessage(error.message || "Invoice analysis failed.");
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const savePdfToLedger = async () => {
+    if (!pdfResult || pdfSaved) return;
+
+    setSavingPdf(true);
+    setMessage("");
+
+    const token = localStorage.getItem("ecoledger_token");
+
+    try {
+      const response = await fetch(
+        "http://localhost:5000/api/documents/save",
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: `Bearer ${token}`,
+          },
+          body: JSON.stringify({
+            originalName: pdfResult.originalName,
+            extractedText: pdfResult.extractedText,
+            geminiOutput: pdfResult.geminiOutput,
+          }),
+        }
+      );
+
+      const data = await response.json();
+
+      if (!response.ok) {
+        throw new Error(data.error || data.reason || "Failed to save to ledger");
+      }
+
+      setPdfSaved(true);
+      setMessage("Entry added to audit ledger successfully!");
+      await fetchLedger();
+    } catch (error) {
+      console.error(error);
+      setMessage(error.message || "Failed to add entry. Please try again.");
+    } finally {
+      setSavingPdf(false);
+    }
+  };
 
   return (
     <div className="flex min-h-screen bg-linear-to-br from-[#f8fafc] via-[#eefdf4] to-white text-slate-900">
@@ -259,6 +316,7 @@ const [pdfResult, setPdfResult] = useState(null);
   </div>
 
   <input
+    key={fileInputKey}
     type="file"
     accept=".pdf"
     onChange={(e) => setSelectedFile(e.target.files[0])}
@@ -273,12 +331,123 @@ const [pdfResult, setPdfResult] = useState(null);
 
   <button
     onClick={uploadInvoice}
-    disabled={uploading}
-    className="mt-5 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-2xl font-semibold"
+    disabled={uploading || !!pdfResult}
+    className="mt-5 bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-2xl font-semibold disabled:opacity-50"
   >
     {uploading ? "Analyzing..." : "Upload & Analyze"}
   </button>
+
+  {message && (
+    <p
+      className={`mt-4 flex items-center gap-2 font-medium ${
+        message.includes("successfully")
+          ? "text-green-600"
+          : "text-red-500"
+      }`}
+    >
+      {message.includes("successfully") ? (
+        <CheckCircle2 size={18} />
+      ) : (
+        <AlertCircle size={18} />
+      )}
+      {message}
+    </p>
+  )}
 </motion.div>
+
+        {uploading && (
+          <motion.div
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            className="bg-white/90 backdrop-blur-xl p-6 rounded-3xl border border-slate-200 shadow-[0_18px_45px_rgba(15,23,42,0.08)] mt-6"
+          >
+            <p className="text-blue-600 animate-pulse font-semibold">
+              Analyzing uploaded invoice...
+            </p>
+          </motion.div>
+        )}
+
+        {pdfResult && (
+          <motion.div
+            initial={{ opacity: 0, y: 24 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ duration: 0.45 }}
+            className="grid lg:grid-cols-2 gap-6 mt-6"
+          >
+            <ResultCard
+              icon={<Database />}
+              title="Invoice Extraction Result"
+              rows={[
+                ["Category", pdfResult.category || "N/A"],
+                ["Activity", pdfResult.activity || "N/A"],
+                [
+                  "Quantity",
+                  `${pdfResult.quantity || 0} ${pdfResult.unit || "-"}`,
+                ],
+                ["AI Confidence", `${pdfResult.confidence ?? 0}%`],
+              ]}
+            />
+
+            <div className="bg-white/90 backdrop-blur-xl p-6 rounded-3xl border border-slate-200 shadow-[0_18px_45px_rgba(15,23,42,0.08)]">
+              <div className="flex items-center gap-3 mb-5">
+                <div className="bg-blue-100 text-blue-600 p-3 rounded-2xl">
+                  <Calculator size={22} />
+                </div>
+
+                <div>
+                  <h2 className="text-2xl font-bold text-slate-950">
+                    Carbon Calculation
+                  </h2>
+                  <p className="text-slate-500 text-sm">
+                    Review the extraction before adding to your ledger.
+                  </p>
+                </div>
+              </div>
+
+              <div className="grid sm:grid-cols-2 gap-4 mb-5">
+                <MiniMetric
+                  label="Emission Factor"
+                  value={pdfResult.factor || 0}
+                />
+                <MiniMetric
+                  label="Total CO₂e"
+                  value={`${pdfResult.co2 || 0} kg`}
+                />
+              </div>
+
+              <div className="flex flex-wrap gap-3">
+                <button
+                  onClick={savePdfToLedger}
+                  disabled={pdfSaved || savingPdf}
+                  className="bg-green-500 hover:bg-green-600 text-white px-6 py-3 rounded-2xl font-semibold flex items-center gap-2 disabled:opacity-50"
+                >
+                  <CheckCircle2 size={18} />
+                  {savingPdf
+                    ? "Saving..."
+                    : pdfSaved
+                    ? "Added to Ledger"
+                    : "Add to Ledger"}
+                </button>
+
+                <button
+                  onClick={resetPdfUpload}
+                  className="bg-blue-500 hover:bg-blue-600 text-white px-6 py-3 rounded-2xl font-semibold flex items-center gap-2"
+                >
+                  <RefreshCw size={18} />
+                  Analyze Another Invoice
+                </button>
+
+                <button
+                  onClick={resetPdfUpload}
+                  className="bg-slate-100 hover:bg-slate-200 text-slate-700 px-6 py-3 rounded-2xl font-semibold flex items-center gap-2"
+                >
+                  <X size={18} />
+                  Cancel
+                </button>
+              </div>
+            </div>
+          </motion.div>
+        )}
 
         {loading && (
           <motion.div
