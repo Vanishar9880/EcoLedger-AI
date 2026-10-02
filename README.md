@@ -219,9 +219,9 @@ This creates an auditable carbon accounting workflow.
 
 - MongoDB Atlas
 
-### Deployment (Planned)
+### Deployment
 
-- Frontend → Vercel
+- Frontend → [EcoLedger AI](https://ecoledger-ai-1.onrender.com)
 - Backend → Render
 - Database → MongoDB Atlas
 
