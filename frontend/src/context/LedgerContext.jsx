@@ -1,9 +1,8 @@
 import { createContext, useContext, useEffect, useState } from "react";
 import { useAuth } from "./AuthContext";
+import API_BASE_URL from "../config/api";
 
 const LedgerContext = createContext();
-
-const API_URL = "http://localhost:5000/api/ledger";
 
 export function LedgerProvider({ children }) {
   const { token, user } = useAuth();
@@ -20,7 +19,7 @@ export function LedgerProvider({ children }) {
     try {
       setLedgerLoading(true);
 
-      const response = await fetch(API_URL, {
+      const response = await fetch(`${API_BASE_URL}/api/ledger`, {
         headers: {
           Authorization: `Bearer ${token}`,
         },
@@ -52,7 +51,7 @@ setLedger(normalizedData);
   const addEntry = async (entry) => {
     if (!token) return;
 
-    const response = await fetch(API_URL, {
+    const response = await fetch(`${API_BASE_URL}/api/ledger`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -78,7 +77,7 @@ setLedger((prev) => [normalizedEntry, ...prev]);
   const deleteEntry = async (id) => {
     if (!token) return;
 
-    const response = await fetch(`${API_URL}/${id}`, {
+    const response = await fetch(`${API_BASE_URL}/api/ledger/${id}`, {
       method: "DELETE",
       headers: {
         Authorization: `Bearer ${token}`,

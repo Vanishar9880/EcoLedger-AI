@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import API_BASE_URL from "../config/api";
 import Sidebar from "../components/Sidebar";
 import AuditDetailDrawer from "../components/AuditDetailDrawer";
 import { motion } from "framer-motion";
@@ -11,7 +12,7 @@ import {
   Activity,
 } from "lucide-react";
 
-const API_URL = "http://localhost:5000/api/audit";
+const API_URL = `${API_BASE_URL}/api/audit`;
 
 function AuditTrail() {
   const [records, setRecords] = useState([]);

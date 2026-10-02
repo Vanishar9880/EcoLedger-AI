@@ -1,8 +1,7 @@
 import { createContext, useContext, useState } from "react";
+import API_BASE_URL from "../config/api";
 
 const AuthContext = createContext();
-
-const API_URL = "http://localhost:5000/api/auth";
 
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(() => {
@@ -15,7 +14,7 @@ export function AuthProvider({ children }) {
   });
 
   const signup = async (formData) => {
-    const response = await fetch(`${API_URL}/signup`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/signup`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -39,7 +38,7 @@ export function AuthProvider({ children }) {
   };
 
   const login = async (formData) => {
-    const response = await fetch(`${API_URL}/login`, {
+    const response = await fetch(`${API_BASE_URL}/api/auth/login`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

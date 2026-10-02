@@ -1,6 +1,7 @@
 import { useState } from "react";
 import { useLedger } from "../context/LedgerContext";
 import Sidebar from "../components/Sidebar";
+import API_BASE_URL from "../config/api";
 import { motion } from "framer-motion";
 import {
   Sparkles,
@@ -57,7 +58,7 @@ function DataIngestion() {
     setResult(null);
 
     try {
-      const response = await fetch("http://localhost:5000/api/analyze", {
+      const response = await fetch(`${API_BASE_URL}/api/analyze`, {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -106,7 +107,7 @@ function DataIngestion() {
       formData.append("file", selectedFile);
 
       const response = await fetch(
-        "http://localhost:5000/api/documents/upload",
+        `${API_BASE_URL}/api/documents/upload`,
         {
           method: "POST",
           headers: {
@@ -142,7 +143,7 @@ function DataIngestion() {
 
     try {
       const response = await fetch(
-        "http://localhost:5000/api/documents/save",
+        `${API_BASE_URL}/api/documents/save`,
         {
           method: "POST",
           headers: {

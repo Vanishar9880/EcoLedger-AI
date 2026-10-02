@@ -1,6 +1,7 @@
 import { useState } from "react";
 import Sidebar from "../components/Sidebar";
 import { useLedger } from "../context/LedgerContext";
+import API_BASE_URL from "../config/api";
 import { motion } from "framer-motion";
 import {
   FileText,
@@ -31,7 +32,7 @@ function Compliance() {
 
       const token = localStorage.getItem("ecoledger_token");
 
-      const response = await fetch("http://localhost:5000/api/report/summary", {
+      const response = await fetch(`${API_BASE_URL}/api/report/summary`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
@@ -57,7 +58,7 @@ function Compliance() {
     try {
       const token = localStorage.getItem("ecoledger_token");
 
-      const response = await fetch("http://localhost:5000/api/report/pdf", {
+      const response = await fetch(`${API_BASE_URL}/api/report/pdf`, {
         method: "GET",
         headers: {
           Authorization: `Bearer ${token}`,
